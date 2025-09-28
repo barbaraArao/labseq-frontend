@@ -1,0 +1,34 @@
+<form [formGroup]="form" (ngSubmit)="calculate()" class="p-6 bg-white rounded-xl shadow-md">
+  <div class="grid grid-cols-12 gap-4">
+    <div class="col-span-12">
+      <app-input
+        controlName="seqIdx"
+        label="Position"
+        type="text"
+        placeholder="Enter an integer"
+      ></app-input>
+    </div>
+
+    <div class="col-span-12 flex justify-end gap-4 items-center">
+      <app-button type="submit" [disabled]="form.invalid || loading()">
+        Submit
+      </app-button>
+      <app-button type="button" [variant]="'danger-outline'" (click)="clear()">Clear</app-button>
+    </div>
+  </div>
+</form>
+
+@if (performanceTime()!== null) {
+<div class="mt-4 text-sm text-gray-600">
+  Execution time: <strong>{{ performanceTime() | number : '1.2-2' }}</strong> seconds
+</div>
+} @if (loading()) {
+<div class="flex justify-center my-6">
+  <app-loader [size]="'lg'"></app-loader>
+</div>
+} @if (!loading() && result() !== null) {
+<div class="max-h-64 overflow-y-auto p-2 border rounded text-center mt-6 text-gray-700">
+  l({{ form.get('seqIdx')?.value }}) =
+  <strong class="break-all whitespace-normal">{{ result()! | bigNumber }}</strong>
+</div>
+}

@@ -1,0 +1,28 @@
+<div class="flex flex-col w-full mb-4 relative">
+  @if (label) {
+  <label class="mb-1 text-sm font-medium text-gray-700">
+    {{ label }}
+  </label>
+  }
+
+  <input
+    [type]="type"
+    [formControlName]="controlName"
+    [placeholder]="placeholder"
+    class="input-field border rounded-md px-3 py-2"
+  />
+
+  @if (control?.invalid && (control?.dirty || control?.touched)) {
+  <div class="absolute -bottom-4 left-0 text-red-400 text-xs">
+    @if (control?.hasError('required')) {
+    <div>Field is required</div>
+    } @if (control?.hasError('min')) {
+    <div>Value must be greater than 0</div>
+    } @if (control?.hasError('max')) {
+    <div>Value exceeds the maximum allowed</div>
+    } @if (control?.hasError('pattern')) {
+    <div>Only integers are allowed</div>
+    }
+  </div>
+  }
+</div>
