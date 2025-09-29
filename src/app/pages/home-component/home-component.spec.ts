@@ -37,26 +37,28 @@ describe('HomeComponent', () => {
     expect(component.result()).toBe('123');
     expect(component.error()).toBeNull();
     expect(component.loading()).toBeFalse();
+    expect(component.loadingBackend()).toBeFalse();
     expect(component.performanceTime()).not.toBeNull();
   }));
 
   it('should call calculateByApi when tooBig = true', fakeAsync(() => {
     labseqServiceSpy.calculate.and.returnValue(of({ value: 'ignored', tooBig: true }));
-    labseqServiceSpy.calculateByApi.and.returnValue(of({ value: '999', digits: 25454 }));
+    labseqServiceSpy.calculateByApi.and.returnValue(of({ value: '999', digits: 123 }));
 
-    component.form.patchValue({ seqIdx: 2_000_000 });
+    component.form.patchValue({ seqIdx: 2000000 });
     component.calculate();
 
     tick();
 
-    expect(labseqServiceSpy.calculate).toHaveBeenCalledWith(2_000_000);
-    expect(labseqServiceSpy.calculateByApi).toHaveBeenCalledWith(2_000_000);
+    expect(labseqServiceSpy.calculate).toHaveBeenCalledWith(2000000);
+    expect(labseqServiceSpy.calculateByApi).toHaveBeenCalledWith(2000000);
     expect(component.result()).toBe('999');
     expect(component.error()).toBeNull();
+    expect(component.loadingBackend()).toBeFalse();
   }));
 
   it('should handle errors from labseqService', fakeAsync(() => {
-    labseqServiceSpy.calculate.and.returnValue(throwError(() => 'Erro simulado'));
+    labseqServiceSpy.calculate.and.returnValue(throwError(() => 'simulated error'));
 
     component.form.patchValue({ seqIdx: 10 });
     component.calculate();
@@ -64,22 +66,24 @@ describe('HomeComponent', () => {
     tick();
 
     expect(component.result()).toBeNull();
-    expect(component.error()).toBe('Erro simulado');
+    expect(component.error()).toBe('simulated error');
     expect(component.loading()).toBeFalse();
+    expect(component.loadingBackend()).toBeFalse();
   }));
 
   it('should handle errors from calculateByApi when tooBig = true', fakeAsync(() => {
     labseqServiceSpy.calculate.and.returnValue(of({ value: 'ignored', tooBig: true }));
-    labseqServiceSpy.calculateByApi.and.returnValue(throwError(() => 'Erro na API'));
+    labseqServiceSpy.calculateByApi.and.returnValue(throwError(() => new Error('Erro na API')));
 
-    component.form.patchValue({ seqIdx: 2_000_000 });
+    component.form.patchValue({ seqIdx: 2000000 });
     component.calculate();
 
     tick();
 
-    expect(component.result()).toBeNull();
+    expect(component.result()).toBe('');
     expect(component.error()).toBe('Erro na API');
     expect(component.loading()).toBeFalse();
+    expect(component.loadingBackend()).toBeFalse();
   }));
 
   it('should clear form and reset state when clear is called', () => {
@@ -87,6 +91,7 @@ describe('HomeComponent', () => {
     component.error.set('err');
     component.performanceTime.set(5);
     component.loading.set(true);
+    component.loadingBackend.set(true);
 
     component.clear();
 
@@ -95,5 +100,6 @@ describe('HomeComponent', () => {
     expect(component.error()).toBeNull();
     expect(component.performanceTime()).toBeNull();
     expect(component.loading()).toBeFalse();
+    expect(component.loadingBackend()).toBeFalse();
   });
 });

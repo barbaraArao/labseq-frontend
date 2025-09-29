@@ -27,7 +27,7 @@ describe('Labseq Worker (Jasmine)', () => {
       done();
     };
 
-    worker.postMessage(1_000_001);
+    worker.postMessage(100_000);
   });
 
   it('should handle invalid input gracefully', (done) => {

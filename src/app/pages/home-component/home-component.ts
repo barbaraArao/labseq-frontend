@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { LabseqService } from '../../core/services/labseq.service';
-import { of, Subscription, switchMap } from 'rxjs';
+import { catchError, of, Subscription, switchMap } from 'rxjs';
 import { ButtonComponent } from '../../shared/components/button-component/button-component';
 import { InputComponent } from '../../shared/components/input-component/input-component';
 import { BigNumberPipe } from '../../shared/pipes/big-number.pipe';
@@ -20,7 +20,6 @@ import { DecimalPipe } from '@angular/common';
     DecimalPipe,
   ],
   templateUrl: './home-component.html',
-
 })
 export class HomeComponent {
   public form: FormGroup;
@@ -28,6 +27,7 @@ export class HomeComponent {
   result = signal<string | null>(null);
   error = signal<string | null>(null);
   loading = signal(false);
+  loadingBackend = signal(false);
   performanceTime = signal<number | null>(null);
 
   private subscription?: Subscription;
@@ -57,9 +57,15 @@ export class HomeComponent {
       .pipe(
         switchMap(({ value, tooBig }) => {
           if (tooBig) {
-            return this.labseqService
-              .calculateByApi(n)
-              .pipe(switchMap((res) => of({ value: res.value, tooBig: false })));
+            this.loadingBackend.set(true);
+            return this.labseqService.calculateByApi(n).pipe(
+              switchMap((res) => of({ value: res.value, tooBig: false })),
+              catchError((err) => {
+                this.error.set(err?.message ?? 'Failed to fetch from API');
+                this.loading.set(false);
+                return of({ value: null, tooBig: false });
+              })
+            );
           }
           return of({ value, tooBig: false });
         })
@@ -71,11 +77,13 @@ export class HomeComponent {
         error: (err) => {
           this.error.set(err);
           this.loading.set(false);
+          this.loadingBackend.set(false);
         },
         complete: () => {
           const end = performance.now();
           this.performanceTime.set((end - start) / 1000);
           this.loading.set(false);
+          this.loadingBackend.set(false);
         },
       });
   }
@@ -89,6 +97,7 @@ export class HomeComponent {
     this.result.set(null);
     this.error.set(null);
     this.performanceTime.set(null);
+    this.loadingBackend.set(false);
     this.loading.set(startingCalc);
     this.subscription?.unsubscribe();
   }
