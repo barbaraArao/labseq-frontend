@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 const CACHE_LIMIT = 300_000;
-const ITER_LIMIT = 1_000_000;
+const ITER_LIMIT = 20;
 
 const cache: bigint[] = [0n, 1n, 0n, 1n];
 
